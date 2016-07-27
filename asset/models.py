@@ -1,52 +1,56 @@
-from django.db import models
-import codecs
+import os, sys
 
-class NiceBoatSkill(models.Model):
-	image = models.ImageField(upload_to='niceboat', blank=True)
-	name = models.CharField(max_length=60, unique=True)
-	level = models.IntegerField(max_length=2)
+from sqlalchemy import Column, Sequence, ForeignKey
+from sqlalchemy import Boolean, SmallInteger, Integer, BigInteger, Float, String
+from sqlalchemy.ext.declarative import declarative_base
 
-class NiceBoatMP(models.Model):
-	level = models.IntegerField(max_length=3)
-	mp = models.IntegerField(max_length=32)
-	price = models.CharField(max_length=32)
-	max = models.IntegerField(max_length=32)
-	mobs = models.CharField(max_length=64)
+Base = declarative_base()
 
-class RandomSet(models.Model):
-	randomsetid = models.IntegerField(max_length=32, unique=True, db_index=True, primary_key=True)
-	itemid = models.IntegerField(max_length=32, unique=True)
-	#ml = models.IntegerField(max_length=32)
-	#job = models.IntegerField(max_length=32)
-	#type = models.IntegerField(max_length=32)
-	#slot = models.IntegerField(max_length=32)
-	#weaponid = models.IntegerField(max_length=32)
-	#armorid = models.IntegerField(max_length=32)
-	#socketid = models.IntegerField(max_length=32)
-	name = models.CharField(max_length=256)
-	#nameid = models.IntegerField(max_length=32)
-	desc = models.CharField(max_length=1024)
-	grade = models.IntegerField(max_length=1, default=1)
-	#server = models.IntegerField(max_length=32, default=511)
-	#descid = models.IntegerField(max_length=32)
-	icon = models.CharField(max_length=256)
+class ItemInfo(Base):
+	__tablename__ = "ItemInfo"
 
-	class Meta:
-		ordering = ['name']
+	item_id = Column(Integer, unique=True, index=True, primary_key=True)
+	item_type = Column(Integer)
+	item_type_option = Column(Integer)
+	item_category = Column(Integer)
+	grade = Column(Integer)
+	price_buy = Column(Integer)
+	price_sell = Column(Integer)
+	stack = Column(Integer)
+	item_lv = Column(Integer)
+	require_lv = Column(Integer)
+	mastery_grade = Column(Integer)
+	mastery_lv = Column(Integer)
+	require_job = Column(Integer)
+	equip_type = Column(Integer)
+	equip_slot = Column(Integer)
+	weapon_id = Column(Integer)
+	armor_id = Column(Integer)
+	bind_type = Column(Integer)
+	randomset_id = Column(Integer, unique=True)
+	socket_group_id = Column(Integer)
+	effect_id = Column(Integer)
+	skill_id = Column(Integer)
+	theme_id = Column(Integer)
+	is_drop = Column(Boolean)
+	is_deposit = Column(Boolean)
+	is_destruct = Column(Boolean)
+	is_sell = Column(Boolean)
+	is_trade = Column(Boolean)
+	is_compose = Column(Boolean)
+	category_high = Column(Integer)
+	category_medium = Column(Integer)
+	category_low = Column(Integer)
+	name = Column(String(256))
+	name_id = Column(Integer)
+	desc = Column(String(4096))
+	desc_id = Column(Integer)
+	icon = Column(String(256))
 
-	def __unicode__(self):
-		return self.name
+class RandomSet(Base):
+	__tablename__ = "RandomSet"
 
-class ItemSet(models.Model):
-	randomset = models.ForeignKey(RandomSet, related_name="items")
-	name = models.CharField(max_length=256)
-	desc = models.CharField(max_length=1024)
-	grade = models.IntegerField(max_length=1, default=1)
-	#server = models.IntegerField(max_length=32, default=511)
-	ratio = models.DecimalField(max_digits=10, decimal_places=7)
-
-	class Meta:
-		ordering = ['randomset', '-ratio', 'name']
-
-	def __unicode__(self):
-		return self.name
+	pk = Column(Integer, Sequence("randomset_pk_seq"), primary_key=True)
+	randomset = Column(Integer, ForeignKey("ItemSet.randomset_id"))
+	item = Column(Integer, ForeignKey("ItemSet.item_id"))
+	ratio = Column(Float)
