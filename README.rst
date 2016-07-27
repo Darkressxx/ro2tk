@@ -16,5 +16,8 @@ Features
 License
 -------
 
-Copyright (c) 2016 Gabriel Cavallo
-MIT License https://opensource.org/licenses/MIT
+Copyright (c) 2016, Gabriel Cavallo
+All rights reserved.
+
+BSD 3-Clause License
+https://opensource.org/licenses/BSD-3-Clause
