@@ -12,7 +12,7 @@ class CT(object):
 	types = []
 	rows = []
 
-	def open(self, path):
+	def read(self, path):
 		"""
 		Parse CT file to a decoded list
 

@@ -7,7 +7,7 @@ class CSV(object):
 	types = []
 	rows = []
 
-	def open(self, path):
+	def read(self, path):
 		"""
 		Parse CSV file to list
 
