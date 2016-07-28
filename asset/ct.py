@@ -26,6 +26,9 @@ class CT(Asset):
 		self.types = [self._mstype(self._unpack()) for i in range(self._unpack())]
 		self.rows = [[self._unpack(t) for t in self.types] for i in range(self._unpack())]
 
+		if self.verbose:
+			print("\nCT read of \"{0}\" complete!\n".format(self.path))
+
 		self.ct.close()
 		return [self.header] + [self.types] + self.rows
 
@@ -36,7 +39,10 @@ class CT(Asset):
 		:param list data: Decoded list to write on CT file
 		"""
 
-		pass
+		if self.verbose:
+			print("\nCT.write() not implementend yet\n")
+
+		return
 
 	@staticmethod
 	def _mstype(n):
@@ -58,7 +64,7 @@ class CT(Asset):
 		elif n == 9: return "FLOAT"
 		elif n == 11: return "INT64"
 		elif n == 12: return "BOOL"
-		else: print("No types for byte \"{0}\"".format(n), file=sys.stderr)
+		else: print("\nNo types for byte \"{0}\"\n".format(n), file=sys.stderr)
 
 	def _unpack(self, dtyp=None):
 		"""

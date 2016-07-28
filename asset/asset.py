@@ -8,6 +8,8 @@ class Asset(metaclass=ABCMeta):
 	types = []
 	rows = []
 
+	verbose = False
+
 	def __init__(self, path):
 		self.path = path
 		self.name = os.path.splitext(os.path.basename(self.path))[0]

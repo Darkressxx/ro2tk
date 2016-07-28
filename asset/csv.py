@@ -23,6 +23,9 @@ class CSV(Asset):
 		self.types = self.csv.readline().rstrip("\r\n").split("\t")
 		self.rows = [line.rstrip("\r\n").split("\t") for line in self.csv]
 
+		if self.verbose:
+			print("\nCSV read of \"{0}\" complete!\n".format(self.path))
+
 		self.csv.close()
 		return [self.header] + [self.types] + self.rows
 
@@ -41,4 +44,6 @@ class CSV(Asset):
 		self.rows = "\n".join("\t".join(l) for l in data[2:]) + "\n"
 
 		self.csv.write(self.header + self.types + self.rows)
-		print("CSV write to \"{0}\" complete!".format(self.path))
+
+		if self.verbose:
+			print("\nCSV write to \"{0}\" complete!\n".format(self.path))
