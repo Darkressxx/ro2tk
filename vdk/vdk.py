@@ -1,134 +1,110 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-"""
-pyVDK - VDK file utility for Python.
-https://github.com/gcavallo/pyVDK/
-
-Copyright (c) 2015 by Gabriel Cavallo
-BSD 3-Clause License http://opensource.org/licenses/BSD-3-Clause
-"""
-
-from __future__ import print_function, division, unicode_literals
 import os, sys, binascii, time, zlib, struct
 
-_progress = 0
-
-def unpack(filename):
+class VDK(object):
 	"""
-	Unpacks VDK file to a directory.
+	Gravity proprietary archive for Ragnarok Online 2 client files
 
-	:param filename: file name of the VDK
-	:type filename: str
+	TODO: Document file format
+
+	:param str path: Path to VDK file
 	"""
 
-	vdk = open(filename, "rb")
-	root = os.path.splitext(os.path.basename(filename))[0]
-	version, _, files, dirs, size, flist = _header(vdk)
-	t1 = time.time()
-
-	try:
-		reload(sys); sys.setdefaultencoding('utf8') # Python 2.7+
-	except (NameError, AttributeError):
-		pass # Python 3.4+
-
-	def recursive(vdk, path="."):
-		noffset = 1
-		while noffset:
-			bit, name, usize, zsize, doffset, noffset = \
-				struct.unpack("<?128sIIII", vdk.read(145))
-			name = name.decode("cp949").rstrip("\0")
-
-			if bit:
-				if not os.path.exists(path):
-					os.makedirs(path)
-
-				if name not in (".", ".."):
-					recursive(vdk, "{0}/{1}".format(path, name))
-			else:
-				fpath = "{0}/{1}".format(path, name)
-
-				global _progress
-				_progress += 1
-				print("[{0:.2%}] Extracting: {1} ..." \
-					.format(_progress/files, fpath))
-
-				data = vdk.read(zsize)
-				_extract(fpath, data)
-
-	global _progress
 	_progress = 0
-	recursive(vdk, root)
-	vdk.close()
+	_timer = 0
 
-	print("\nExtraction complete! ({0}s)\n" \
-		.format(round(time.time() - t1, 2)))
+	verbose = False
 
-def pack(directory):
-	"""
-	Packs directory into a VDK file.
+	root = ""
+	version = None
+	files = None
+	dirs = None
+	size = None
+	flist = None
 
-	:param directory: directory name to pack
-	:type directory: str
-	"""
+	def __init__(self, path):
+		"""Initialize object and open VDK"""
+		self.path = path
+		self.root = os.path.split(self.path)[0] 
+		self.name = os.path.splitext(os.path.basename(self.path))[0]
 
-	print("Packing is not implemented yet.")
+	def unpack(self):
+		"""Extract VDK file to a subdirectory"""
 
-def info(filename):
-	"""
-	Prints VDK file information.
+		self.vdk = open(self.path, "rb")
+		self.version, _, self.files, self.dirs, self.size, self.flist = self._header()
+		self._timer = time.time()
 
-	:param filename: name of file to unpack
-	:type filename: str
-	:returns: (version, _, files, dirs, size, filelist_size)
-	:rtype: (string, int, int, int, int, int)
-	"""
+		def recursive(path="."):
+			noffset = 1
+			while noffset:
+				bit, fname, usize, zsize, doffset, noffset = \
+					struct.unpack("<?128sIIII", self.vdk.read(145))
+				fname = fname.decode("cp949").rstrip("\0")
 
-	vdk = open(filename, "rb")
-	h = _header(vdk)
-	vdk.close()
+				if bit:
+					if not os.path.exists(path):
+						os.makedirs(path)
 
-	print("Version: {0}\nFiles: {1}\nDirs: {2}\nSize: {3}\nFilelist size: {4}" \
-		.format(h[0], h[2], h[3], h[4], h[5]))
+					if fname not in (".", ".."):
+						recursive("{0}/{1}".format(path, fname))
+				else:
+					fpath = "{0}/{1}".format(path, fname)
 
-	return h
+					self._progress += 1
+					if self.verbose:
+						print("[{0:.2%}] Extracting: {1} ...".format(self._progress/self.files, fpath))
 
-def _header(vdk):
-	h = list(struct.unpack("<8sIIII", vdk.read(24)))
-	h[0] = h[0].decode("utf-8")
+					data = self.vdk.read(zsize)
+					self._inflate(fpath, data)
 
-	if h[0] == "VDISK1.1":
-		h.append(struct.unpack("<I", vdk.read(4))[0])
-	elif h[0] == "VDISK1.0":
-		h.append(0)
-	else:
-		sys.exit(1)
+		recursive("{0}/{1}".format(self.root, self.name))
+		self.vdk.close()
 
-	return tuple(h)
+		if self.verbose:
+			print("\nExtraction complete! ({:.2f}s)\n".format(time.time() - self._timer))
 
-def _extract(fpath, data):
-	f = open(fpath, "wb")
-	d = zlib.decompressobj()
-	try:
-		f.write(d.decompress(data))
-		f.write(d.flush())
-	except zlib.error:
-		f.truncate(0)
-		f.seek(0)
-		f.write(data)
-	f.close()
+	def pack(self, directory):
+		"""
+		Packs directory into a VDK file.
 
-def _compress():
-	pass
+		:param str directory: directory name to pack
+		"""
 
-if __name__ == "__main__":
-	import argparse
-	parser = argparse.ArgumentParser(description=__doc__,
-		formatter_class=argparse.RawDescriptionHelpFormatter)
-	parser.add_argument("-c", "--compress", type=pack, metavar="DIR",
-		help="compress DIR to a VDK file.")
-	parser.add_argument("-e", "--extract", type=unpack, metavar="FILE",
-		help="extract VDK file.")
-	parser.add_argument("-i", "--info", type=info, metavar="FILE",
-		help="show VDK file information.")
-	args = parser.parse_args()
+		print("\nPacking is not implemented yet.\n", file=sys.stderr)
+
+	def _header(self):
+		h = list(struct.unpack("<8sIIII", self.vdk.read(24)))
+		h[0] = h[0].decode("UTF-8")
+
+		if h[0] == "VDISK1.1":
+			h.append(struct.unpack("<I", self.vdk.read(4))[0])
+		elif h[0] == "VDISK1.0":
+			h.append(0)
+		else:
+			return
+
+		return tuple(h)
+
+	@staticmethod
+	def _inflate(fpath, data):
+		"""
+		Decompress DEFLATE data and write to file
+
+		:param str fpath: Path of file to write
+		:param data: DEFLATE data to decompress to file
+		"""
+
+		f = open(fpath, "wb")
+		d = zlib.decompressobj()
+
+		try:
+			# Write decompressed DEFLATE data
+			f.write(d.decompress(data))
+			f.write(d.flush())
+		except zlib.error:
+			# Write data as-is if not DEFLATE
+			f.truncate(0)
+			f.seek(0)
+			f.write(data)
+
+		f.close()
