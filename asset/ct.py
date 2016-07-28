@@ -39,8 +39,7 @@ class CT(Asset):
 		:param list data: Decoded list to write on CT file
 		"""
 
-		if self.verbose:
-			print("\nCT.write() not implementend yet\n")
+		print("\nCT.write() not implementend yet\n", file=sys.stderr)
 
 		return
 
