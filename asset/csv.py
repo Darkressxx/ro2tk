@@ -1,40 +1,44 @@
-import os, sys
+import os
 
-class CSV(object):
+from .asset import Asset
 
-	name = ""
-	header = []
-	types = []
-	rows = []
+class CSV(Asset):
+	"""
+	Comma-separated values file format for Ragnarok Online 2 assets
 
-	def read(self, path):
+	:param str path: Path to CSV file
+	"""
+
+	def read(self):
 		"""
 		Parse CSV file to list
 
-		:param str path: Path to CSV file
 		:return: Parsed CSV data
 		:rtype: list
 		"""
 
-		try:
-			self.csv = open(path, "r", encoding="utf-16")
-		except (OSError, IOError):
-			print("could not open \"{0}\"".format(path), file=sys.stderr)
+		self.csv = open(self.path, "r", encoding="UTF-16", newline="\r\n")
 
-		self.name = os.path.splitext(os.path.basename(path))[0]
-		self.header = self.csv.readline().rstrip("\n\r").split("\t")
-		self.types = self.csv.readline().rstrip("\n\r").split("\t")
-		self.rows = [line.rstrip("\n\r").split("\t") for line in self.csv]
+		self.header = self.csv.readline().rstrip("\r\n").split("\t")
+		self.types = self.csv.readline().rstrip("\r\n").split("\t")
+		self.rows = [line.rstrip("\r\n").split("\t") for line in self.csv]
 
 		self.csv.close()
 		return [self.header] + [self.types] + self.rows
 
-	def write(self, path, data):
+	def write(self, data):
 		"""
-		TODO: Write list to CSV
+		Write list to CSV
 
-		:param str path: Path to CSV file
 		:param list data: Decoded list to write on CSV file
 		"""
 
-		pass
+		os.makedirs(os.path.dirname("./{0}".format(self.path)), exist_ok=True)
+		self.csv = open(self.path, "w", encoding="UTF-16", newline="\r\n")
+
+		self.header = "\t".join(i for i in data[0]) + "\n"
+		self.types = "\t".join(i for i in data[1]) + "\n"
+		self.rows = "\n".join("\t".join(l) for l in data[2:]) + "\n"
+
+		self.csv.write(self.header + self.types + self.rows)
+		print("CSV write to \"{0}\" complete!".format(self.path))

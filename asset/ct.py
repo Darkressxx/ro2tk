@@ -1,33 +1,27 @@
 import os, sys, struct
 
-class CT(object):
+from .asset import Asset
+
+class CT(Asset):
 	"""
 	Gravity proprietary file format for Ragnarok Online 2 assets
 
 	TODO: Document file format
+
+	:param str path: Path to CT file
 	"""
 
-	name = ""
-	header = []
-	types = []
-	rows = []
-
-	def read(self, path):
+	def read(self):
 		"""
 		Parse CT file to a decoded list
 
-		:param str path: Path to CT file
 		:return: Decoded CT data
 		:rtype: list
 		"""
 
-		try:
-			self.ct = open(path, "rb")
-			self.ct.seek(64)
-		except (OSError, IOError):
-			print("could not open \"{0}\"".format(path), file=sys.stderr)
+		self.ct = open(self.path, "rb")
+		self.ct.seek(64)
 
-		self.name = os.path.splitext(os.path.basename(path))[0]
 		self.header = [self.ct.read(2 * self._unpack()).decode("UTF-16LE") for i in range(self._unpack())]
 		self.types = [self._mstype(self._unpack()) for i in range(self._unpack())]
 		self.rows = [[self._unpack(t) for t in self.types] for i in range(self._unpack())]
@@ -35,11 +29,10 @@ class CT(object):
 		self.ct.close()
 		return [self.header] + [self.types] + self.rows
 
-	def write(self, path, data):
+	def write(self, data):
 		"""
 		TODO: Write list to CT file
 
-		:param str path: Path to CT file
 		:param list data: Decoded list to write on CT file
 		"""
 
@@ -73,7 +66,8 @@ class CT(object):
 
 		:param dtyp: MS-DTYP to decode, UINT32 if None (default)
 		:type dtyp: str or None
-		:return: byte(s) of requested type
+		:return: byte(s) of requested dtyp
+		:rtype: str, int if dtyp is None
 		"""
 
 		if dtyp in ("BYTE", "BOOL"):
