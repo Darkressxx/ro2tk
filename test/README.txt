@@ -5,7 +5,5 @@ test
 │   └── STRING.VDK
 ├── ASSET
 │   └── ASSET
-│       ├── copy
-│       │   └── Attendance.csv
 │       └── ItemInfo.ct
 └── README.txt
