@@ -22,9 +22,9 @@ class CT(Asset):
 		self.ct = open(self.path, "rb")
 		self.ct.seek(64)
 
-		self.header = [self.ct.read(2 * self._unpack()).decode("UTF-16LE") for i in range(self._unpack())]
-		self.types = [self._mstype(self._unpack()) for i in range(self._unpack())]
-		self.rows = [[self._unpack(t) for t in self.types] for i in range(self._unpack())]
+		self.header = [self.ct.read(2 * int(self._unpack())).decode("UTF-16LE") for i in range(int(self._unpack()))]
+		self.types = [self._mstype(int(self._unpack())) for i in range(int(self._unpack()))]
+		self.rows = [[self._unpack(t) for t in self.types] for i in range(int(self._unpack()))]
 
 		if self.verbose:
 			print("\nCT read of \"{0}\" complete!\n".format(self.path))
@@ -65,34 +65,33 @@ class CT(Asset):
 		elif n == 12: return "BOOL"
 		else: print("\nNo types for byte \"{0}\"\n".format(n), file=sys.stderr)
 
-	def _unpack(self, dtyp=None):
+	def _unpack(self, dtyp="DWORD"):
 		"""
 		Decode binary data from Windows data type
 
-		:param dtyp: MS-DTYP to decode, UINT32 if None (default)
-		:type dtyp: str or None
-		:return: byte(s) of requested dtyp
-		:rtype: str, int if dtyp is None
+		:param str dtyp: MS-DTYP to decode, defaults to DWORD
+		:return: unpacked byte(s) of requested dtyp as a string
+		:rtype: str
 		"""
 
 		if dtyp in ("BYTE", "BOOL"):
-			return "{:d}".format(struct.unpack("B", self.ct.read(1))[0])
+			return str(struct.unpack("B", self.ct.read(1))[0])
 		elif dtyp == "SHORT":
-			return "{:d}".format(struct.unpack("h", self.ct.read(2))[0])
+			return str(struct.unpack("h", self.ct.read(2))[0])
 		elif dtyp == "WORD":
-			return "{:d}".format(struct.unpack("<H", self.ct.read(2))[0])
+			return str(struct.unpack("<H", self.ct.read(2))[0])
 		elif dtyp == "INT":
-			return "{:d}".format(struct.unpack("i", self.ct.read(4))[0])
+			return str(struct.unpack("i", self.ct.read(4))[0])
 		elif dtyp == "DWORD":
-			return "{:d}".format(self._unpack())
+			return str(struct.unpack("<L", self.ct.read(4))[0])
 		elif dtyp == "DWORD_HEX":
-			return "0x{:08X}".format(self._unpack())
+			return "0x{:08X}".format(int(self._unpack()))
 		elif dtyp == "STRING":
-			length = self._unpack()
+			length = int(self._unpack())
 			return self.ct.read(2 * length).decode("UTF-16LE") if length else "null"
 		elif dtyp == "FLOAT":
-			return "{:.6f}".format(struct.unpack("f", self.ct.read(4))[0])
+			return str(struct.unpack("f", self.ct.read(4))[0])
 		elif dtyp == "INT64":
-			return "{:d}".format(struct.unpack("<Q", self.ct.read(8))[0])
+			return str(struct.unpack("<Q", self.ct.read(8))[0])
 		else:
-			return struct.unpack("<L", self.ct.read(4))[0]
+			print("\nCould not read type \"{0}\"\n".format(dtyp), file=sys.stderr)
