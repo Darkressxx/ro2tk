@@ -1,2 +1,2 @@
-from .csv import CSV
+from .tsv import TSV
 from .ct import CT
