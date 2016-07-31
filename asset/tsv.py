@@ -19,7 +19,7 @@ class TSV(Asset):
 		:rtype: list
 		"""
 
-		self.tsv = open(self.path, "r", encoding="UTF-16", newline="\r\n")
+		self.tsv = open(self.path, "r", newline="\r\n")
 
 		self.header = self.tsv.readline().rstrip("\r\n").split("\t")
 		self.types = self.tsv.readline().rstrip("\r\n").split("\t")
@@ -39,7 +39,7 @@ class TSV(Asset):
 		"""
 
 		os.makedirs(os.path.dirname("./{0}".format(self.path)), exist_ok=True)
-		self.tsv = open(self.path, "w", encoding="UTF-16", newline="\r\n")
+		self.tsv = open(self.path, "w", newline="\r\n")
 
 		self.header = "\t".join(i for i in data[0]) + "\n"
 		self.types = "\t".join(i for i in data[1]) + "\n"
