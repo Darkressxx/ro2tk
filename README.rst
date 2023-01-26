@@ -1,9 +1,7 @@
 RO2 Toolkit
 ===========
 
-| Work in progress - Port of all my ro2-related scripts to a toolkit
-| https://github.com/gcavallo/ro2tk/
-
+| Work in progress 
 Features
 --------
 
